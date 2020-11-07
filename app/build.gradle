@@ -86,6 +86,8 @@ dependencies {
         exclude group: 'com.android.support'
     }
 
+    implementation 'com.suddenh4x.ratingdialog:awesome-app-rating:2.2.1'
+
     implementation('com.nononsenseapps:filepicker:4.2.1', {
         exclude group: 'com.android.support'
     })

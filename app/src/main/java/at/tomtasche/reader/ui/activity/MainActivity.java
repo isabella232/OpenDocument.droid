@@ -30,6 +30,11 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.kobakei.ratethisapp.RateThisApp;
+import com.suddenh4x.ratingdialog.AppRating;
+import com.suddenh4x.ratingdialog.buttons.ConfirmButtonClickListener;
+import com.suddenh4x.ratingdialog.buttons.RateDialogClickListener;
+import com.suddenh4x.ratingdialog.preferences.MailSettings;
+import com.suddenh4x.ratingdialog.preferences.RatingThreshold;
 
 import java.util.List;
 
@@ -142,31 +147,30 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        // TODO: replace with something smarter like https://github.com/Angtrim/Android-Five-Stars-Library
+        // TODO: use custom condition for opened documents
 
-        RateThisApp.onCreate(this);
-        RateThisApp.setCallback(new RateThisApp.Callback() {
-
-            @Override
-            public void onYesClicked() {
-                analyticsManager.report("rating_yes");
-            }
-
-            @Override
-            public void onNoClicked() {
-                analyticsManager.report("rating_no");
-            }
-
-            @Override
-            public void onCancelClicked() {
-                analyticsManager.report("rating_cancel");
-            }
-        });
-
-        if (RateThisApp.shouldShowRateDialog()) {
-            analyticsManager.report("rating_show");
-            RateThisApp.showRateDialog(this);
-        }
+        new AppRating.Builder(this)
+                .setMinimumLaunchTimes(2)
+                .setMinimumDays(3)
+                .setMinimumLaunchTimesToShowAgain(5)
+                .setMinimumDaysToShowAgain(10)
+                .setShowOnlyFullStars(true)
+                .setDebug(true)
+                .setMailSettingsForFeedbackDialog(new MailSettings("support@opendocument.app", "OpenDocument Reader - Android Feedback", "", ""))
+                .setRatingThreshold(RatingThreshold.FOUR)
+                .setConfirmButtonClickListener(new ConfirmButtonClickListener() {
+                    @Override
+                    public void onClick(float v) {
+                        analyticsManager.report("rating_yes", "rating", v);
+                    }
+                })
+                .setRateLaterButtonClickListener(new RateDialogClickListener() {
+                    @Override
+                    public void onClick() {
+                        analyticsManager.report("rating_no");
+                    }
+                })
+                .showIfMeetsConditions();
     }
 
     private void initializeCatchAllSwitch() {
